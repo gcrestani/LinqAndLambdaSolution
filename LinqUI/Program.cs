@@ -4,26 +4,32 @@ internal class Program
 {
   static void Main(string[] args)
   {
-    GetContactsWithMultipleAddresses(); Console.WriteLine();
+    GetContactsWithMultipleCars(); Console.WriteLine();
     GetContactsFirstName(); Console.WriteLine();
     GetFirstTwoContacts(); Console.WriteLine();
     GetTwoContactsAfterTheFirstTwo(); Console.WriteLine();
     GetContactsOrderByLastName(); Console.WriteLine();
     GetContactsOrderByLastNameDesc(); Console.WriteLine();
+    
+    Console.WriteLine("\nLinq:\n");
+    LinqContactsWithMoreThanOneCar(); Console.WriteLine();
+    LinqGetContactsWithAddresses(); Console.WriteLine();
+    LinqReturnAddressesOfContacts(); Console.WriteLine();
+    LinqReturnAddressesOfContactsUsingList(); Console.WriteLine();
 
     Console.ReadLine();
   }
 
-  private static void GetContactsWithMultipleAddresses()
+  private static void GetContactsWithMultipleCars()
   {
     var data = SampleData.GetContactData();
-    var results = data.Where(x => x.AddressesIds.Count > 1);
+    var results = data.Where(x => x.CarId.Count > 1);
 
-    Console.WriteLine($"This contacts have more than 1 address:");
+    Console.WriteLine($"This contacts have more than 1 Car:");
 
     foreach (var item in results)
     {
-      Console.WriteLine($"{item.FirstName} {item.LastName} - Addresses: {item.AddressesIds.Count}");
+      Console.WriteLine($"{item.FirstName} {item.LastName} - Cars: {item.CarId.Count}");
     }
   }
   private static void GetContactsFirstName()
@@ -90,4 +96,67 @@ internal class Program
       Console.WriteLine($"{item.FirstName} {item.LastName}");
     }
   }
+
+  private static void LinqContactsWithMoreThanOneCar()
+  {
+    var contacts = SampleData.GetContactData();
+
+    var contactsWithMoreThanOneCar = from c in contacts
+                                     where c.CarId.Count() > 1
+                                     select c;
+
+    Console.WriteLine("This contacts have more than 1 Car");
+    foreach (var contact in contactsWithMoreThanOneCar)
+    {
+      Console.WriteLine(contact.FirstName + " " + contact.LastName);
+    }
+  }
+
+  private static void LinqGetContactsWithAddresses()
+  {
+    var contacts = SampleData.GetContactData();
+    var addresses = SampleData.GetAddressData();
+
+    var contactsWithMoreThanOneAddress = from c in contacts
+                                         join a in addresses
+                                         on c.Id equals a.ContactId
+                                         select new { c.FirstName, c.LastName, a.City, a.State };
+
+    Console.WriteLine("This contacts have more than 1 Address");
+    foreach (var contact in contactsWithMoreThanOneAddress)
+    {
+      Console.WriteLine(contact.FirstName + " " + contact.LastName + " - " + contact.City);
+    }
+  }
+
+  private static void LinqReturnAddressesOfContacts()
+  {
+    var contacts = SampleData.GetContactData();
+    var addresses = SampleData.GetAddressData();
+
+    var contactWithAddresses = from c in contacts
+                               select new { c.FirstName, c.LastName, Address = addresses.Where(a => a.ContactId.Equals(c.Id)) };
+
+    Console.WriteLine("Contacts and their addresses Qty");
+    foreach (var contact in contactWithAddresses)
+    {
+      Console.WriteLine(contact.FirstName + " " + contact.LastName + " - Addresses Count: " + contact.Address.Count());
+    }
+  }
+
+  private static void LinqReturnAddressesOfContactsUsingList()
+  {
+    var contacts = SampleData.GetContactData();
+    var addresses = SampleData.GetAddressData();
+
+    var contactWithAddresses = from c in contacts
+                               select new { c.FirstName, c.LastName, Address = addresses.Where(a => c.Adresses.Contains(a.Id)) };
+
+    Console.WriteLine("Contacts and their addresses Qty");
+    foreach (var contact in contactWithAddresses)
+    {
+      Console.WriteLine(contact.FirstName + " " + contact.LastName + " - Addresses Count: " + contact.Address.Count());
+    }
+  }
+
 }
